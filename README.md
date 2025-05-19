@@ -1,8 +1,6 @@
 # DataAnalytics-Assessment
 
-# SQL Case Studies – Adashi Staging
-
-This project showcases SQL solutions to key business questions using data from Adashi's staging environment. Each query answers a specific analytical need, with clear logic, safeguards for common data issues, and a practical business focus.
+This project showcases SQL solutions to key business questions using data from the provided environment. Each query answers a specific analytical need, with clear logic and safeguards for common data issues.
 
 ---
 
@@ -16,9 +14,8 @@ The final result filters for customers with at least one of each plan type and s
 
 ### Challenges
 
-- Handled NULL values in names using `COALESCE`, so name concatenation doesn't fail.
-- Ensured that plan types are correctly counted without scanning the `plans_plan` table more than once.
-- Used proper joins to avoid losing customers without deposits but with valid plans.
+- I had to handled NULL values in names using `COALESCE`, so name concatenation (first and last name since the name column was filled with nulls) doesn't fail , I also made sure to improve table scan execution plan by ensuring that plan types are correctly counted without scanning the `plans_plan` table more than once.
+- Then i also had o be careful during joins to avoid losing customers without deposits but with valid plans.
 
 ---
 
@@ -28,13 +25,11 @@ The final result filters for customers with at least one of each plan type and s
 
 To segment users by how often they transact, I calculated the number of transactions each customer makes per month, averaged it over time, and categorized them as High, Medium, or Low frequency users. I extracted the month using `DATE_FORMAT` and used a `CASE` expression to label the frequency.
 
-This helps business teams understand customer engagement at a glance and tailor strategies to different user segments.
+This way you can tell the high value customers at a glance and tailor strategies to different user segments.
 
 ### Challenges
 
-- Handled variability in customer activity over time by using monthly buckets.
-- Took care to average per customer even if some months had zero transactions.
-- Ordered output meaningfully using `FIELD()` to enforce logical category order.
+- I made use of CTE here for readability and I ordered output meaningfully using `FIELD()` to enforce logical category order.
 
 ---
 
@@ -42,15 +37,14 @@ This helps business teams understand customer engagement at a glance and tailor 
 
 ### Approach
 
-This query flags savings or investment accounts that have had no transactions for over a year. I used a `LEFT JOIN` between `plans_plan` and `savings_savingsaccount` to catch both active and inactive accounts. By checking the most recent transaction date and comparing it to today's date, I determined how long each account has been dormant.
+This query flags savings or investment accounts that have had no transactions for over a year. I used a `LEFT JOIN` between `plans_plan` and `savings_savingsaccount` to catch both active and inactive accounts. With the most recent transaction date and then comparing it to today's date, I could tell how long each account has been dormant.
 
-Accounts with no transactions at all are explicitly included using a `NULL` check on `last_transaction_date`.
+Just as a precaution, accounts with no transactions at all are explicitly included using a `NULL` check on `last_transaction_date`.
 
 ### Challenges
 
-- Correctly identified accounts with zero transaction history by allowing NULLs in the join.
-- Used `DATEDIFF` and `DATE_SUB` to precisely define the 365-day cutoff.
-- Labeled account types clearly using `CASE` to improve readability and filtering.
+- I made use of `DATEDIFF` and `DATE_SUB` to define the 365-day cutoff.
+- I also abeled account types clearly using `CASE` to improve readability and filtering.
 
 ---
 
@@ -58,14 +52,13 @@ Accounts with no transactions at all are explicitly included using a `NULL` chec
 
 ### Approach
 
-To estimate the CLV of each customer, I calculated how long they've had an account (in months), how many transactions they've made, and the total transaction value. I then applied a simplified CLV formula that multiplies average monthly transactions by 12 and by a 0.1% profit margin on total transaction volume.
+To estimate the CLV of each customer, I calculated how long they've had an account (in months), how many transactions they've made, and the total transaction value. I then applied the CLV formula that multiplied average monthly transactions by 12 and by a 0.1% profit margin on total transaction volume.
 
-This gives a sense of customer profitability over a typical year, helping marketing or product teams prioritize retention or rewards.
+So this one gave me customer profitability
 
 ### Challenges
 
-- Avoided division by zero for new users by using `NULLIF` in the tenure calculation.
-- Aggregated transaction value and count per customer while handling possible NULL join values.
-- Converted transaction value from kobo to naira to keep the monetary value interpretable.
+- Since we are calculating,I avoided division by zero for new users by using `NULLIF` in the tenure calculation.Then i also had to handle null values during the calculation
+- Then I converted transaction value from kobo to naira 
 
 ---
